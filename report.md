@@ -2,18 +2,23 @@
 
 ## Background
 
-MultIO was introduced to bring greater flexibility to the existing I/O-server infrastructure.
-Several motivations drove this decision:
+The existing **Fortran I/O server** (hereafter *legacy I/O server*) has served as the
+primary output mechanism for ECMWF's IFS model for many years.  However, its monolithic
+design makes it difficult to support new output destinations or to extend its functionality
+without significant re-engineering.  **MultIO** is a new, C++-based I/O multiplexing server
+designed to replace the legacy Fortran I/O server while providing a cleaner, more extensible
+foundation.  Several motivations drove this decision:
 
-- **Broader output-source support.** The current I/O-server is tightly coupled to a single
-  output path. MultIO makes it straightforward to add further output sources, such as NEMO,
-  without invasive changes to the core server.
+- **Broader output-source support.** The legacy Fortran I/O server is tightly coupled to a
+  single output path. MultIO makes it straightforward to add further output sources, such as
+  NEMO, without invasive changes to the core server code.
 - **Potential extension to data input.** Beyond writing model output, MultIO is designed so
   that the same multiplexing framework could eventually be applied to reading input data,
-  opening the door to a unified I/O layer.
-- **Complementing and extending I/O-server development.** MultIO does not replace the
-  existing I/O-server; rather it sits alongside it, complementing its capabilities and
-  providing an extension point for future work.
+  opening the door to a unified I/O layer – something the legacy Fortran I/O server was never
+  designed to support.
+- **Complementing and extending I/O-server development.** MultIO is intended to replace the
+  legacy Fortran I/O server incrementally, sitting alongside it during transition periods,
+  complementing its capabilities and providing an extension point for future work.
 
 ---
 
