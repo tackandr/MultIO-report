@@ -85,7 +85,7 @@ FA (Fichier ARPEGE) is the proprietary binary format used by the ARPEGE/ALADIN/A
 
 **Output.**
 
-- *FA encoding:* EcCodes is now ready to handle the encoding of SURFEX FA formatted data. A partial set of translations from the FA name space already exists - for example, `SFX.TG1P1` (temperature in the ground, level 1, patch 1) and further SURFEX variables are defined in the ecCodes local-concepts definitions. The goal is to encode all SURFEX variables in GRIB2. Where the FA name is available, the translation logic used in `facgrm.F90` can be applied together with the existing ecCodes definitions to map in-memory SURFEX variables to their corresponding GRIB2 representations.
+- *Wrapping the existing FA encoding:* The existing Fortran FA encoding library will be wrapped within the MultIO pipeline, allowing FA-format output to be produced through the standard MultIO API without modifying existing encoder logic.
 - *GRIB2 output of FA fields:* In addition to the native FA format, it will be possible to produce GRIB2 output for the same fields, facilitating interoperability with data consumers that do not support FA.
 - *Non-standard WMO parameters:* FA fields may carry parameters that are not part of the standard WMO GRIB2 parameter database. These will be supported through the use of experimental parameter IDs defined in YAML configuration files. This mechanism is designed to be reusable across other model components and output formats.
 
