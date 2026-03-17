@@ -16,13 +16,10 @@
 
 ## 1. Background
 
-MultIO has been developed to provide greater flexibility than the existing I/O-server infrastructure used in operational numerical weather prediction (NWP) and climate modelling. The motivation for MultIO originates from several overlapping needs within the earth-system modelling community and has grown into a broadly applicable middleware layer for handling model I/O. The primary drivers are summarised below.
+MultIO has been developed to serve as a middleware layer for I/O in coupled earth-system models. The primary motivation is the coupling of IFS (Integrated Forecasting System) and NEMO (Nucleus for European Modelling of the Ocean), where each model currently requires its own dedicated I/O server. Running separate I/O servers introduces load-balancing challenges and results in non-unified output data formats — GRIB for IFS and NetCDF for NEMO. A goal of MultIO is to unify this under a single middleware layer; however, that vision has not yet been fully realised, and the work described here represents progress towards it. The primary drivers for MultIO are summarised below.
 
 **Extensibility to additional output sources.**
 The initial impetus for MultIO came from the need to support additional model components — most notably NEMO (Nucleus for European Modelling of the Ocean) — without duplicating or re-implementing I/O logic for each component. The modular architecture of MultIO makes it straightforward to add new data sources and sinks.
-
-**Bidirectional I/O and input support.**
-Beyond traditional output-only workflows, MultIO is designed to handle data *input* as well, supporting bidirectional data transport. This enables use cases such as reading lateral boundary conditions, restart files, and periodically injected analysis or AI-model fields during a forecast run.
 
 **Complementing and extending the Fortran I/O-server.**
 MultIO acts as a complement and extension to the existing Fortran-based I/O-server, providing a modern, library-based alternative that can be integrated incrementally into existing workflows without requiring a full replacement.
