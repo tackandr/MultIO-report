@@ -64,7 +64,7 @@ The primary output format currently supported by MultIO is GRIB2, the WMO standa
 
 ### 2.3 Build Process
 
-MultIO follows a CMake-based build system that integrates with the broader ECMWF software stack, including ecBuild, ecKit, and FDB (Fields DataBase). Dependencies are resolved through standard package management conventions used by the ECMWF ecosystem. The build is designed to be portable across Linux HPC environments and supports both MPI-enabled and serial configurations for testing purposes.
+The previously cmake-based build process has been replaced by ecbundle, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. ecbundle orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual cmake workflow. This aligns the IAL build process with that used for IFS at ECMWF, unifying the two workflows and thereby simplifying future co-developments between the IFS and IAL communities. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
 
 ---
 
