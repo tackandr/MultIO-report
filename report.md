@@ -64,7 +64,7 @@ The primary output format currently supported by MultIO is GRIB2, the WMO standa
 
 ### 2.3 Build Process
 
-The previously cmake-based build process has been replaced by ecbundle, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. ecbundle orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual cmake workflow. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/ecmwf-ifs/ial-bundle) on GitHub.
+The previously cmake-based build process has been replaced by ecbundle, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. ecbundle orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual cmake workflow. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
 
 ---
 
