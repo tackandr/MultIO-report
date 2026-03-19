@@ -22,7 +22,7 @@ MultIO has been developed to serve as an I/O and in-memory post-processing layer
 The initial drive for MultIO was to support additional output sinks without duplicating or re-implementing I/O logic. The modular architecture of MultIO makes it straightforward to add new data sources and sinks.
 
 **Single unified interface for multiple model components.**
-The Earth-system modelling stack involves multiple components —- atmosphere, ocean, land surface, sea ice, and others. MultIO provides a single, consistent I/O interface that all components can share, reducing integration complexity and maintenance burden.
+The Earth-system modelling stack involves multiple components — atmosphere, ocean, land surface, sea ice, and others. MultIO provides a single, consistent I/O interface that all components can share, reducing integration complexity and maintenance burden.
 
 **On-the-fly post-processing.**
 MultIO supports in-situ post-processing operations including statistical aggregations over time horizons, horizontal interpolation, re-gridding, and re-projection through external libraries. This capability is particularly valuable within the DEODE framework, where the ability to produce derived products on the fly reduces downstream data volumes and latency.
