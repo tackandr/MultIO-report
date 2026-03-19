@@ -16,19 +16,16 @@
 
 ## 1. Background
 
-MultIO has been developed to serve as a middleware layer for I/O in coupled earth-system models. The primary motivation is the coupling of IFS (Integrated Forecasting System) and NEMO (Nucleus for European Modelling of the Ocean), where each model currently requires its own dedicated I/O server. Running separate I/O servers introduces load-balancing challenges and results in non-unified output data formats — GRIB for IFS and NetCDF for NEMO. A goal of MultIO is to unify this under a single middleware layer; however, that vision has not yet been fully realised, and the work described here represents progress towards it. Within the DEODE (Destination Earth On-Demand Extremes) framework, MultIO also provides the mechanism for integrating IAL model output with ECMWF data services, enabling direct writing of model results to the ECMWF Field DataBase (FDB). The primary drivers for MultIO are summarised below.
+MultIO has been developed to serve as an I/O and in-memory post-processing layer for coupled Earth-system models. The primary motivation was the introduction of support for in-memory post-processing and GRIB2 output for ocean fields in the coupled IFS-NEMO model. This guarantees uniform GRIB2 output format across all components. However, this configuration requires each model to have their own dedicated I/O server, which introduces load-balancing challenges. The IFS Fortran I/O-server is also less flexible for supporting the computation of teomporal statistics. A goal of MultIO is to unify this under a single I/O-server layer and introduce that to limited-area model (LAM) configurations. The work described here represents progress towards it. Within the DEODE (Destination Earth On-Demand Extremes) framework, MultIO also provides the mechanism for integrating IAL model output with ECMWF data services, enabling direct writing of model results to the ECMWF Field DataBase (FDB). The primary drivers for MultIO are summarised below.
 
 **Extensibility to additional output sources.**
-The initial impetus for MultIO came from the need to support additional model components — most notably NEMO (Nucleus for European Modelling of the Ocean) — without duplicating or re-implementing I/O logic for each component. The modular architecture of MultIO makes it straightforward to add new data sources and sinks.
-
-**Complementing and extending the Fortran I/O-server.**
-MultIO acts as a complement and extension to the existing Fortran-based I/O-server, providing a modern, library-based alternative that can be integrated incrementally into existing workflows without requiring a full replacement.
+The initial drive for MultIO was to support additional output sinks without duplicating or re-implementing I/O logic. The modular architecture of MultIO makes it straightforward to add new data sources and sinks.
 
 **Single unified interface for multiple model components.**
-The earth-system modelling stack involves multiple components — atmosphere, ocean, land surface, sea ice, and others. MultIO provides a single, consistent I/O interface that all components can share, reducing integration complexity and maintenance burden.
+The Earth-system modelling stack involves multiple components — atmosphere, ocean, land surface, sea ice, and others. MultIO provides a single, consistent I/O interface that all components can share, reducing integration complexity and maintenance burden.
 
 **On-the-fly post-processing.**
-MultIO supports in-situ post-processing operations including statistical aggregations over time horizons, horizontal interpolation, re-gridding, and re-projection through external libraries. This capability is particularly valuable within the Deode (Destination Earth on-demand extremes) framework, where the ability to produce derived products on the fly reduces downstream data volumes and latency.  
+MultIO supports in-situ post-processing operations including statistical aggregations over time horizons, horizontal interpolation, re-gridding, and re-projection through external libraries. This capability is particularly valuable within the DEODE framework, where the ability to produce derived products on the fly reduces downstream data volumes and latency.
 
 **Integration with DEODE / IAL workflows.**
 Within the DEODE framework, a key motivation for integrating MultIO into the Integrated Arome–ARPEGE–LAM (IAL) modelling workflow is to enable model output to be written directly to the ECMWF Field DataBase (FDB) through the MultIO pipeline. This capability supports the operational data distribution architecture used in the Destination Earth ecosystem and facilitates seamless access to simulation outputs through ECMWF data services.
@@ -39,32 +36,32 @@ Within the DEODE framework, a key motivation for integrating MultIO into the Int
 
 ### 2.1 Basic Design Principles
 
-The design of MultIO is guided by the need for modularity, portability, and minimal coupling between the model code and the I/O backend. The key architectural concepts are described below and draw on the principles introduced in the MultIO paper <!-- TODO: insert full citation -->.
+The design of MultIO is guided by the need for modularity, portability, and asynchronicity, i.e., minimal coupling between the model code and the I/O backend. The key architectural concepts are described below and draw on the principles introduced in the MultIO paper <!-- TODO: insert full citation -->.
 
-**Collaborative development.** 
+**Collaborative development.**
 The development and integration work described here is carried out as a collaborative effort between the DEODE consortium and ECMWF teams, ensuring alignment with ECMWF operational infrastructure and with the evolving architecture of the Destination Earth platform.
 
 **Communicator splitting.**
 MultIO achieves parallel I/O by splitting the MPI communicator at model initialisation. Dedicated I/O server tasks are allocated from the global communicator and run concurrently with the compute tasks. Data is transferred asynchronously from compute ranks to I/O ranks, decoupling model integration time from I/O latency.
 
 **Bidirectional workflow and transport.**
-The architecture supports both output (model → file/stream) and input (file/stream → model) data paths within the same framework. This symmetry ensures that the same configuration and pipeline machinery can be reused for read operations, avoiding code duplication and allowing a consistent treatment of I/O in the model lifecycle.
+The recently updated architecture design supports both output (model → file/stream) and input (file/stream → model) data paths within the same framework. This symmetry ensures that the same configuration and pipeline machinery can be reused for read operations, avoiding code duplication and allowing a consistent treatment of I/O in the model lifecycle.
 
 **Technical implementation in IFS.**
 
-MultIO has been integrated into the Integrated Forecasting System (IFS) of ECMWF. The integration follows a client–server model in which the IFS compute tasks act as MultIO clients, marshalling field data via the MultIO API, while dedicated server tasks handle encoding, buffering, and writing. The implementation replaces or wraps the legacy I/O calls, enabling a gradual migration path.
+MultIO has been integrated into the NEMO component of IFS of ECMWF and is being intergrated into the atmosphere/wave components. The integration follows a client–server model in which the IFS(-NEMO) compute tasks act as MultIO clients, marshalling field data via the MultIO API, while dedicated server tasks handle additional post-processing tasks, GRIB2 encoding, and writing. The implementation replaces or wraps the legacy I/O calls, enabling a gradual migration path.
 
 **Merge into the IAL repository.**
-The MultIO codebase has been merged into the Integrated Arome–ARPEGE–LAM (IAL) repository, making it available to the wider community of NWP centres that build on the shared IAL model stack. This integration also enables the use of MultIO within the DEODE workflow, where writing output through MultIO directly to the ECMWF Field DataBase (FDB) is a key objective. This ensures that MultIO developments are available to all IAL users and that ongoing changes remain synchronised across the community.
+The MultIO codebase has been merged into the IAL repository, making it available to the wider community of NWP centres that build on the shared IAL model stack. This integration also enables the use of MultIO within the DEODE workflow, where writing output through MultIO directly to the ECMWF FDB is a key objective. This ensures that MultIO developments are available to all IAL users and that ongoing changes remain synchronised across the community.
 
 ### 2.2 Coverage
 
 **GRIB2.**
-The primary output format currently supported by MultIO is GRIB2, the WMO standard for gridded binary data exchange. Field encoding via ecCodes is integrated directly into the MultIO pipeline, allowing model output to be written in standards-compliant GRIB2 without additional post-processing steps.
+The primary output format currently supported by MultIO is GRIB2, the WMO standard for gridded binary data exchange. Field encoding via ecCodes is integrated directly into the MultIO pipelines, allowing model output to be written in standards-compliant GRIB2 without additional post-processing steps.
 
 ### 2.3 Build Process
 
-The previously cmake-based build process has been replaced by ecbundle, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. ecbundle orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual cmake workflow. This aligns the IAL build process with that used for IFS at ECMWF, unifying the two workflows and thereby simplifying future co-developments between the IFS and IAL communities. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
+The previously CMake-based build process has been replaced by `ecbundle`, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. `ecbundle` orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual CMake workflow. This aligns the IAL build process with that used for IFS at ECMWF, unifying the two workflows and thereby simplifying future co-developments between the IFS and IAL communities. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
 
 ---
 
