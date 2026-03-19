@@ -36,7 +36,7 @@ Within the DEODE framework, a key motivation for integrating MultIO into the Int
 
 ### 2.1 Basic Design Principles
 
-The design of MultIO is guided by the need for modularity, portability, and minimal coupling between the model code and the I/O backend. The key architectural concepts are described below and draw on the principles introduced in the MultIO paper <!-- TODO: insert full citation -->.
+The design of MultIO is guided by the need for modularity, portability, and asynchronicity, i.e.~minimal coupling between the model code and the I/O backend. The key architectural concepts are described below and draw on the principles introduced in the MultIO paper <!-- TODO: insert full citation -->.
 
 **Collaborative development.**
 The development and integration work described here is carried out as a collaborative effort between the DEODE consortium and ECMWF teams, ensuring alignment with ECMWF operational infrastructure and with the evolving architecture of the Destination Earth platform.
@@ -45,23 +45,23 @@ The development and integration work described here is carried out as a collabor
 MultIO achieves parallel I/O by splitting the MPI communicator at model initialisation. Dedicated I/O server tasks are allocated from the global communicator and run concurrently with the compute tasks. Data is transferred asynchronously from compute ranks to I/O ranks, decoupling model integration time from I/O latency.
 
 **Bidirectional workflow and transport.**
-The architecture supports both output (model → file/stream) and input (file/stream → model) data paths within the same framework. This symmetry ensures that the same configuration and pipeline machinery can be reused for read operations, avoiding code duplication and allowing a consistent treatment of I/O in the model lifecycle.
+The recently updated architecture design supports both output (model → file/stream) and input (file/stream → model) data paths within the same framework. This symmetry ensures that the same configuration and pipeline machinery can be reused for read operations, avoiding code duplication and allowing a consistent treatment of I/O in the model lifecycle.
 
 **Technical implementation in IFS.**
 
-MultIO has been integrated into the Integrated Forecasting System (IFS) of ECMWF. The integration follows a client–server model in which the IFS compute tasks act as MultIO clients, marshalling field data via the MultIO API, while dedicated server tasks handle encoding, buffering, and writing. The implementation replaces or wraps the legacy I/O calls, enabling a gradual migration path.
+MultIO has been integrated into the NEMO componenet of IFS of ECMWF and is being intergrated into the atmosphere/wave components. The integration follows a client–server model in which the IFS(-NEMO) compute tasks act as MultIO clients, marshalling field data via the MultIO API, while dedicated server tasks handle additional post-processing tasks, GRIB2 encoding, and writing. The implementation replaces or wraps the legacy I/O calls, enabling a gradual migration path.
 
 **Merge into the IAL repository.**
-The MultIO codebase has been merged into the Integrated Arome–ARPEGE–LAM (IAL) repository, making it available to the wider community of NWP centres that build on the shared IAL model stack. This integration also enables the use of MultIO within the DEODE workflow, where writing output through MultIO directly to the ECMWF Field DataBase (FDB) is a key objective. This ensures that MultIO developments are available to all IAL users and that ongoing changes remain synchronised across the community.
+The MultIO codebase has been merged into the IAL repository, making it available to the wider community of NWP centres that build on the shared IAL model stack. This integration also enables the use of MultIO within the DEODE workflow, where writing output through MultIO directly to the ECMWF FDB is a key objective. This ensures that MultIO developments are available to all IAL users and that ongoing changes remain synchronised across the community.
 
 ### 2.2 Coverage
 
-**GRIB2.**
-The primary output format currently supported by MultIO is GRIB2, the WMO standard for gridded binary data exchange. Field encoding via ecCodes is integrated directly into the MultIO pipeline, allowing model output to be written in standards-compliant GRIB2 without additional post-processing steps.
+**GRIB2**
+The primary output format currently supported by MultIO is GRIB2, the WMO standard for gridded binary data exchange. Field encoding via ecCodes is integrated directly into the MultIO pipelines, allowing model output to be written in standards-compliant GRIB2 without additional post-processing steps.
 
 ### 2.3 Build Process
 
-The previously cmake-based build process has been replaced by ecbundle, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. ecbundle orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual cmake workflow. This aligns the IAL build process with that used for IFS at ECMWF, unifying the two workflows and thereby simplifying future co-developments between the IFS and IAL communities. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
+The previously CMake-based build process has been replaced by `ecbundle`, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. `ecbundle` orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual CMake workflow. This aligns the IAL build process with that used for IFS at ECMWF, unifying the two workflows and thereby simplifying future co-developments between the IFS and IAL communities. Configuration details for building the IAL bundle -— including dependency specifications and build instructions -— are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
 
 ---
 
