@@ -56,7 +56,7 @@ The MultIO codebase has been merged into the IAL repository, making it available
 
 ### 2.2 Coverage
 
-**GRIB2**
+**GRIB2.**
 The primary output format currently supported by MultIO is GRIB2, the WMO standard for gridded binary data exchange. Field encoding via ecCodes is integrated directly into the MultIO pipelines, allowing model output to be written in standards-compliant GRIB2 without additional post-processing steps.
 
 ### 2.3 Build Process
