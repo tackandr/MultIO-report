@@ -7,6 +7,7 @@
    - 2.1 [Basic Design Principles](#21-basic-design-principles)
    - 2.2 [Coverage](#22-coverage)
    - 2.3 [Build Process](#23-build-process)
+   - 2.4 [Code samples](#24-code-samples)
 3. [Outlook for Phase 3](#3-outlook-for-phase-3)
    - 3.1 [Feeding Input Data through MultIO](#31-feeding-input-data-through-multio)
    - 3.2 [Implementing FA-Files under the MultIO Framework](#32-implementing-fa-files-under-the-multio-framework)
@@ -62,6 +63,112 @@ The primary output format currently supported by MultIO is GRIB2, the WMO standa
 ### 2.3 Build Process
 
 The previously CMake-based build process has been replaced by `ecbundle`, an ECMWF tool that provides a unified, bundle-based approach for managing and building the full software stack. `ecbundle` orchestrates the configuration and build of all required dependencies as a single bundle, superseding the manual CMake workflow. This aligns the IAL build process with that used for IFS at ECMWF, unifying the two workflows and thereby simplifying future co-developments between the IFS and IAL communities. Configuration details for building the IAL bundle — including dependency specifications and build instructions — are maintained in the [ial-bundle repository](https://github.com/destination-earth-digital-twins/ial-bundle) on GitHub.
+
+### 2.4 Code samples
+
+The MultIO must be initialized as follows in the file *arpifs/programs/master.F90* before calling the actual MPI initialization:
+```fortran
+CALL MULTIO_INITIALIZE()
+```
+
+Once the MPI initialization has taken place, MultIO communication split takes place:
+```fortran
+CALL INITIALIZE_LAYOUT( MERGE( MPLUSERCOMM, MPI_COMM_WORLD, LMPLUSERCOMM ) )
+ICOMM_IFS_PLUS_IFS_IO_SERV = GET_COMM_BY_NAME( 'ifs-solver2ifs-io' )
+LLIFS = (IS_IN_ROLE( 'ifs-solver' ) .OR. IS_IN_ROLE( 'ifs-io' ))
+```
+
+The MultIO client (on the compute tasks) gets started and stopped as follows:
+```fortran
+IF ( IS_IN_ROLE( 'ifs-solver' )) THEN
+      CALL MULTIO_CLIENT_START( &
+&      GET_COMM_BY_NAME( 'ifs-solver2multio-server' ), &
+&      GET_COMM_BY_NAME( 'multio-server' ), &
+&      GET_COMM_BY_NAME( 'ifs-solver' ) &
+&     )
+ENDIF
+
+!! Forecasting code here
+CALL CNT0(...)
+
+IF ( IS_IN_ROLE( 'ifs-solver' ) ) THEN
+      CALL MULTIO_CLIENT_STOP()
+ENDIF
+```
+
+Similarly on the I/O-tasks MultIO server gets started and stopped as follows:
+```fortran
+CALL MULTIO_SERVER_START( &
+     &    GET_COMM_BY_NAME( 'ifs-solver2multio-server' ), &
+     &    GET_COMM_BY_NAME( 'multio-server' ), &
+     &    GET_COMM_BY_NAME( 'ifs-solver' ) &
+     &   )
+
+CALL MULTIO_SERVER_STOP()
+```
+
+The MultIO epoch must be finalized at the end (preferably before finalizing MPI):
+```fortran
+CALL MULTIO_FINALIZE()
+```
+
+Writing data out using I/O-servers is implemented in the file *arpifs/control/allfpos.F90*.
+It contains both Fortran I/O-server and MultIO server calls as MultIO currently only
+supports GRIB2 files -- please observe that input parameters are kept the same for both implementations:
+```fortran
+IF (LLUSE_IOSERV) THEN
+  CALL IOSERV_WRHFP(YDFPGEO,IFPDOM,YLRQGP%NFIELDG,CLWFP,YLFIODSC,ZFPBUF,YLFACTX,PTSTEP)
+  IF ( LUSE_MULTIO ) THEN
+    CALL MULTIO_WRHFP(YDFPGEO,IFPDOM,YLRQGP%NFIELDG,CLWFP,YLFIODSC,ZFPBUF,YLFACTX,PTSTEP)
+  ENDIF
+  ...
+ENDIF
+```
+
+The Fortran I/O-server routine IOSERV_WRHFP in the file *arpifs/fullpos/ioserv_wrhfp.F90* does the following:
+```fortran
+ASSOCIATE(NFPRGPL=>YDFPGEO%NFPRGPL, NFPRGPG=>YDFPGEO%NFPRGPG)
+  IO_SERV_C001%IDATEF = YDFACTX (1)%IDATEF
+  ZTSTEP=0._JPRB
+  IF (PRESENT (PTSTEP)) ZTSTEP = PTSTEP
+  CALL IO_SERV_MAP_SEND_PART1(IO_SERV_C001, NFPRGPL, NFPRGPG, YDFLDSC, MTAG_MFIO_WRHFP+ICHAR(CDCONF), YLIOSMPP, &
+  & KDOM_TYPE=NIO_SERV_HDR_IDOM_FPA,PIOPROC1=IO_SERV_C001%PIOPROC1_FLP,PIOPROC2=IO_SERV_C001%PIOPROC2_FLP,PTSTEP=ZTSTEP)
+  CALL EXTFPSELECT (YDFPGEO,YDFLDSC,YLIOSMPP%YLBUFD, PFPBUF)
+  CALL IO_SERV_MAP_SEND_PART2 (IO_SERV_C001, YLIOSMPP)
+END ASSOCIATE
+```
+
+Whereas the MultIO server routine MULTIO_WRHFP in the file *arpifs/fullpos/multio_wrhfp.F90* is currently doing the following job:
+```fortran
+USE MULTIO_SERVER_MOD, ONLY: MIO_HANDLE_
+USE MULTIO_API, ONLY: MULTIO_METADATA
+USE MULTIO_SERVER_MOD, ONLY: CURRENT_STEP
+USE MULTIO_SERVER_MOD, ONLY: CURRENT_COUNTER
+TYPE(MULTIO_METADATA) :: MIOMD
+CNT = CURRENT_COUNTER()
+! Populate message with data                                                                                                                                                                                                                 DO I = 1, KNFG
+  ! Populate the buffer                                                                                                                                                                                                                        FIELD_TMP = 0._JPRB
+  CALL MESSAGE_FILL_DATA( YDFPGEO, PFPBUF, I, YDFPGEO%NFPROMA, YDFPGEO%NFPBLOCS, FIELD_TMP )
+  IERR = MIOMD%NEW(MIO_HANDLE_)
+  IERR = MIOMD%SET( 'misc-globalSize', YDFPGEO%NFPRGPG )
+  IERR = MIOMD%SET( 'name', 'LAM_GP' )
+  IERR = MIOMD%SET( 'domain', 'LAM_GP' )
+  IERR = MIOMD%SET( 'representation', 'unstructured' )
+  IERR = MIOMD%SET( 'grid', 'lambert_lam' )
+  IERR = MIOMD%SET( 'param', 10000*CNT + I ) !YDFACTX(I)%YFAPARAM%INGRIB )
+  IERR = MIOMD%SET( 'levelist', YDFLDSC(I)%ILEVG )
+  IERR = MIOMD%SET( 'levtype', YDFLDSC(I)%CPREF )
+  IERR = MIOMD%SET( 'suffix', YDFLDSC(I)%CSUFF )
+  IERR = MIOMD%SET( 'is_spectral', YDFLDSC(I)%LSPEC )
+  IERR = MIOMD%SET( 'timestep', PTSTEP )
+  IERR = MIOMD%SET( 'step', CURRENT_STEP() )
+  IERR = MIOMD%SET( 'toAllServers', .FALSE. )
+  IERR = MIO_HANDLE_%WRITE_FIELD( MIOMD, FIELD_TMP )
+  IERR = MIOMD%DELETE()
+ENDDO
+```
+
+Please note that error handling code has been omitted for brevity.
 
 ---
 
