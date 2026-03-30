@@ -71,7 +71,7 @@ The MultIO must be initialized as follows in the file *arpifs/programs/master.F9
 CALL MULTIO_INITIALIZE()
 ```
 
-Once the MPI initialization has taken place, MultIO communication split takes place:
+Once the MPI initialization has taken place, the MultIO communicator is split:
 ```fortran
 CALL INITIALIZE_LAYOUT( MERGE( MPLUSERCOMM, MPI_COMM_WORLD, LMPLUSERCOMM ) )
 ICOMM_IFS_PLUS_IFS_IO_SERV = GET_COMM_BY_NAME( 'ifs-solver2ifs-io' )
@@ -146,8 +146,10 @@ USE MULTIO_SERVER_MOD, ONLY: CURRENT_STEP
 USE MULTIO_SERVER_MOD, ONLY: CURRENT_COUNTER
 TYPE(MULTIO_METADATA) :: MIOMD
 CNT = CURRENT_COUNTER()
-! Populate message with data                                                                                                                                                                                                                 DO I = 1, KNFG
-  ! Populate the buffer                                                                                                                                                                                                                        FIELD_TMP = 0._JPRB
+! Populate message with data
+DO I = 1, KNFG
+  ! Populate the buffer
+  FIELD_TMP = 0._JPRB
   CALL MESSAGE_FILL_DATA( YDFPGEO, PFPBUF, I, YDFPGEO%NFPROMA, YDFPGEO%NFPBLOCS, FIELD_TMP )
   IERR = MIOMD%NEW(MIO_HANDLE_)
   IERR = MIOMD%SET( 'misc-globalSize', YDFPGEO%NFPRGPG )
