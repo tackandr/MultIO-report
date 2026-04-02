@@ -8,6 +8,7 @@
    - 2.2 [Coverage](#22-coverage)
    - 2.3 [Build Process](#23-build-process)
    - 2.4 [Code samples](#24-code-samples)
+   - 2.5 [Integration Status and Phase Transition](#25-integration-status-and-phase-transition)
 3. [Outlook for Phase 3](#3-outlook-for-phase-3)
    - 3.1 [Feeding Input Data through MultIO](#31-feeding-input-data-through-multio)
    - 3.2 [Implementing FA-Files under the MultIO Framework](#32-implementing-fa-files-under-the-multio-framework)
@@ -170,24 +171,23 @@ DO I = 1, KNFG
 ENDDO
 ```
 
-Please note that error handling code has been omitted for brevity.
+Please note that error handling code has been omitted for brevi
 
----
 ### 2.5 Integration Status and Phase Transition
 
-While the MultIO server implementation has been successfully developed and validated within the DEODE Phase 2 framework, its integration into the main IAL code line is intentionally not included in the final Phase 2 tagging. This decision ensures that the Phase 2 release remains stable and avoids introducing partially matured functionality into the production baseline.
+While the MultIO server implementation has been successfully developed and validated within the DEODE Phase 2 framework, its integration into the main IAL code line is intentionally not included in the final Phase 2 tagging. This decision avoids introducing partially matured functionality into the production baseline.
 
 Instead, the current implementation is maintained and made accessible through dedicated development branches, which serve as the technical reference point for continued work:
 
-IAL Bundle:
+**IAL Bundle:**
 https://github.com/destination-earth-digital-twins/ial-bundle/tree/feature/multio-io-server
 
-IAL Source:
+**IAL Source:**
 https://github.com/destination-earth-digital-twins/IAL/tree/feature/multio-io-server
 
 These branches capture the full state of the MultIO integration achieved during Phase 2 and provide a solid foundation for further development.
 
-The full integration, consolidation, and operationalisation of MultIO within the IAL workflow are therefore positioned as Phase 3 activities, targeting incorporation into CY49/CY50. This approach allows the functionality to be properly hardened, aligned with ongoing IAL/IFS developments, and integrated in a controlled and maintainable manner.
+The full integration, consolidation, and operationalisation of MultIO within the IAL workflow are therefore positioned as Phase 3 activities, targeting incorporation into CY50. This approach allows the functionality to be properly hardened, aligned with ongoing IAL/IFS developments, and integrated in a controlled and maintainable manner.
 
 ## 3. Outlook for Phase 3
 
