@@ -16,7 +16,7 @@
 
 ## 1. Background
 
-MultIO has been developed to serve as an I/O and in-memory post-processing layer for coupled Earth-system models. The primary motivation was the introduction of support for in-memory post-processing and GRIB2 output for ocean fields in the coupled IFS-NEMO model. This guarantees uniform GRIB2 output format across all components. However, this configuration requires each model to have their own dedicated I/O server, which introduces load-balancing challenges. The IFS Fortran I/O-server is also less flexible for supporting the computation of teomporal statistics. A goal of MultIO is to unify this under a single I/O-server layer and introduce that to limited-area model (LAM) configurations. The work described here represents progress towards it. Within the DEODE (Destination Earth On-Demand Extremes) framework, MultIO also provides the mechanism for integrating IAL model output with ECMWF data services, enabling direct writing of model results to the ECMWF Field DataBase (FDB). The primary drivers for MultIO are summarised below.
+MultIO has been developed to serve as an I/O and in-memory post-processing layer for coupled Earth-system models. The primary motivation was the introduction of support for in-memory post-processing and GRIB2 output for ocean fields in the coupled IFS-NEMO model. This guarantees uniform GRIB2 output format across all components. However, this configuration requires each model to have their own dedicated I/O server, which introduces load-balancing challenges. The IFS Fortran I/O-server is also less flexible for supporting the computation of temporal statistics. A goal of MultIO is to unify this under a single I/O-server layer and introduce that to limited-area model (LAM) configurations. The work described here represents progress towards it. Within the DEODE (Destination Earth On-Demand Extremes) framework, MultIO also provides the mechanism for integrating IAL model output with ECMWF data services, enabling direct writing of model results to the ECMWF Field DataBase (FDB). The primary drivers for MultIO are summarised below.
 
 **Extensibility to additional output sources.**
 The initial drive for MultIO was to support additional output sinks without duplicating or re-implementing I/O logic. The modular architecture of MultIO makes it straightforward to add new data sources and sinks.
@@ -28,7 +28,7 @@ The Earth-system modelling stack involves multiple components — atmosphere, oc
 MultIO supports in-situ post-processing operations including statistical aggregations over time horizons, horizontal interpolation, re-gridding, and re-projection through external libraries. This capability is particularly valuable within the DEODE framework, where the ability to produce derived products on the fly reduces downstream data volumes and latency.
 
 **Integration with DEODE / IAL workflows.**
-Within the DEODE framework, a key motivation for integrating MultIO into the Integrated Arome–ARPEGE–LAM (IAL) modelling workflow is to enable model output to be written directly to the ECMWF Field DataBase (FDB) through the MultIO pipeline. This capability supports the operational data distribution architecture used in the Destination Earth ecosystem and facilitates seamless access to simulation outputs through ECMWF data services.
+Within the DEODE framework, a key motivation for integrating MultIO into the IFS–ARPEGE–LAM (IAL) modelling workflow is to enable model output to be written directly to the ECMWF Field DataBase (FDB) through the MultIO pipeline. This capability supports the operational data distribution architecture used in the Destination Earth ecosystem and facilitates seamless access to simulation outputs through DestinE data services.
 
 ---
 
@@ -36,7 +36,7 @@ Within the DEODE framework, a key motivation for integrating MultIO into the Int
 
 ### 2.1 Basic Design Principles
 
-The design of MultIO is guided by the need for modularity, portability, and asynchronicity, i.e., minimal coupling between the model code and the I/O backend. The key architectural concepts are described below and draw on the principles introduced in the MultIO paper <!-- TODO: insert full citation -->.
+The design of MultIO is guided by the need for modularity, portability, and asynchronicity, i.e., minimal coupling between the model code and the I/O backend. The key architectural concepts are described below and draw on the principles introduced in the MultIO.
 
 **Collaborative development.**
 The development and integration work described here is carried out as a collaborative effort between the DEODE consortium and ECMWF teams, ensuring alignment with ECMWF operational infrastructure and with the evolving architecture of the Destination Earth platform.
